@@ -1,0 +1,11 @@
+idf_component_register(SRCS "main.c"
+                            "pwm.c"
+                            "storage.c"
+                            "gui.c"
+                            "wifi.c"
+                            "sntp_time.c"
+                            "weather.c"
+                            "dns_server.c"
+                            "smart_config.c"
+                       INCLUDE_DIRS "" "inc"
+                       EMBED_FILES page/root.html page/info.html)

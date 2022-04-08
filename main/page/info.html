@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+  <title>ESP32 桌面小电视</title>
+  <style type="text/css">
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      color: #fff;
+      line-height: 2.2;
+    }
+
+    body {
+      height: 100%;
+      background-color: #1F6F4A;
+      50% 50% no-repeat;
+      background-size: cover;
+    }
+
+    .dowebok {
+      position: absolute;
+      left: 50%;
+      top: 30%;
+      width: 380px;
+      height: 500px;
+      margin: -200px 0 0 -200px;
+      border: 3px solid #fff;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .form-item {
+      position: relative;
+      width: 360px;
+      margin: 0 auto;
+      padding-bottom: 20px;
+    }
+
+    .form-item input {
+      width: 288px;
+      height: 48px;
+      padding-left: 10px;
+      border: 1px solid #fff;
+      border-radius: 25px;
+      font-size: 18px;
+      color: #fff;
+      background-color: transparent;
+      outline: none;
+    }
+
+    .send_button {
+      width: 360px;
+      height: 50px;
+      border: 0;
+      border-radius: 25px;
+      font-size: 18px;
+      color: #1f6f4a;
+      outline: none;
+      cursor: pointer;
+      background-color: #fff;
+    }
+
+    .tip {
+      display: none;
+      position: absolute;
+      left: 20px;
+      top: 52px;
+      font-size: 14px;
+      color: #f50;
+    }
+
+    .reg-bar {
+      width: 360px;
+      margin: 20px auto 0;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    .reg-bar a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .reg-bar a:hover {
+      text-decoration: underline;
+    }
+
+    .reg-bar .reg {
+      float: left;
+    }
+
+    .reg-bar .forget {
+      float: right;
+    }
+
+    .dowebok ::-webkit-input-placeholder {
+      font-size: 18px;
+      line-height: 1.4;
+      color: #fff;
+    }
+
+    .dowebok :-moz-placeholder {
+      font-size: 18px;
+      line-height: 1.4;
+      color: #fff;
+    }
+
+    .dowebok ::-moz-placeholder {
+      font-size: 18px;
+      line-height: 1.4;
+      color: #fff;
+    }
+
+    .dowebok :-ms-input-placeholder {
+      font-size: 18px;
+      line-height: 1.4;
+      color: #fff;
+    }
+
+    @media screen and (max-width: 500px) {
+      * {
+        box-sizing: border-box;
+      }
+
+      .dowebok {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0 30px;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .logo {
+        margin: 50px auto;
+      }
+
+      .form-item {
+        width: auto;
+      }
+
+      .form-item input,
+      .form-item button,
+      .reg-bar {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dowebok">
+    <h2>配 置 成 功， 即 将 重 启。</h2>
+  </div>
+</body>
+
+</html>
