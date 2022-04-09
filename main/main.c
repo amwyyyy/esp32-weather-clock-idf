@@ -91,9 +91,9 @@ static void backlight_upgrade(void *pvParameter) {
         } else if (dt.hour >=7 && dt.hour < 15) {
             set_bl_pwm(8);
         } else if (dt.hour >= 15 && dt.hour < 22) {
-            set_bl_pwm(4);
+            set_bl_pwm(6);
         } else {
-            set_bl_pwm(1);
+            set_bl_pwm(4);
         }
         vTaskDelay(1000 * 60 * 60 / portTICK_PERIOD_MS);
     }
@@ -151,6 +151,10 @@ static void event_handle(void *pvParameter) {
 
                 // 启动更新数据任务
                 xTaskCreate(update_data_task, "update", 1024 * 8, NULL, 1, NULL);
+                
+                // 设置背光
+                xTaskCreate(backlight_upgrade, "bl", 1024 * 4, NULL, 3, NULL);
+
                 break;
             case EVENT_WIFI_STA_FAILURE:
                 if (is_init) {
@@ -195,8 +199,6 @@ void app_main() {
     xTaskCreate(event_handle, "event", 1024 * 12, NULL, 1, NULL);
 
     connect_wifi();
-
-    xTaskCreate(backlight_upgrade, "event", 1024 * 4, NULL, 3, NULL);
 
     ESP_LOGI(TAG, "[APP] Free internal memory: %d kb", esp_get_free_internal_heap_size() / 1024);
     ESP_LOGI(TAG, "[APP] Free all memory: %d kb", esp_get_free_heap_size() / 1024);
