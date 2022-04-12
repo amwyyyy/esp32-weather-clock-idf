@@ -146,7 +146,7 @@ void clock_task(lv_task_t * task) {
 }
 
 void wea_task(lv_task_t * task) {
-    if (weather.temp != NULL) {
+    if (weather.temp != NULL && strlen(weather.temp) > 0) {
         // 计算温度比例，按 50℃ 为 100%
         int temp = strtol(weather.temp, NULL, 10);
         int t = temp * 100 / 50;

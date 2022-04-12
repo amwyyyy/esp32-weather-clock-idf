@@ -74,8 +74,21 @@ void connect_wifi() {
 static void update_data_task(void *pvParameter) {
     while (1) {
         vTaskDelay(1000 * 60 * 60 / portTICK_PERIOD_MS);
-        weather_t wea = weather_init(city_code());
+
+        char * code = city_code();
+        weather_t wea = weather_init(code);
         set_weather_info(wea);
+        free(code);
+    }
+}
+
+static void mem_monitor(void *pvParameter) {
+    while (1) {
+        ESP_LOGI(TAG, "[APP] Free internal memory: %d KB", esp_get_free_internal_heap_size() / 1024);
+        ESP_LOGI(TAG, "[APP] Free all memory: %d KB", esp_get_free_heap_size() / 1024);
+        ESP_LOGI(TAG, "[APP] Min free memory: %d KB", esp_get_minimum_free_heap_size() / 1024);
+
+        vTaskDelay(1000 * 60 * 30 / portTICK_PERIOD_MS);
     }
 }
 
@@ -150,7 +163,7 @@ static void event_handle(void *pvParameter) {
                 is_init = 0;
 
                 // 启动更新数据任务
-                xTaskCreate(update_data_task, "update", 1024 * 8, NULL, 1, NULL);
+                xTaskCreate(update_data_task, "update", 1024 * 10, NULL, 1, NULL);
                 
                 // 设置背光
                 xTaskCreate(backlight_upgrade, "bl", 1024 * 4, NULL, 3, NULL);
@@ -192,16 +205,13 @@ void app_main() {
 
     pwm_init();
 
-    set_bl_pwm(0);
-
     gui_init();
 
-    xTaskCreate(event_handle, "event", 1024 * 12, NULL, 1, NULL);
+    xTaskCreate(event_handle, "event", 1024 * 16, NULL, 1, NULL);
 
     connect_wifi();
 
-    ESP_LOGI(TAG, "[APP] Free internal memory: %d kb", esp_get_free_internal_heap_size() / 1024);
-    ESP_LOGI(TAG, "[APP] Free all memory: %d kb", esp_get_free_heap_size() / 1024);
-    ESP_LOGI(TAG, "[APP] Min free memory: %d kb", esp_get_minimum_free_heap_size() /1024);
+    // xTaskCreate(mem_monitor, "mem_monitor", 1024 * 4, NULL, 1, NULL);
+
     ESP_LOGI(TAG, "[APP] Idf version: %s", esp_get_idf_version());
 }
