@@ -96,10 +96,10 @@ char * query_city_code(char * city_name) {
         .disable_auto_redirect = true,
     };
 
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+
     int s_retry_num = 0;
     while (1) {
-        esp_http_client_handle_t client = esp_http_client_init(&config);
-
         esp_err_t err = esp_http_client_perform(client);
         if (err == ESP_OK) {
             ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
@@ -117,6 +117,7 @@ char * query_city_code(char * city_name) {
      }
 
     ESP_LOGD(TAG, "%s", local_response_buffer);
+    esp_http_client_cleanup(client);
 
     // 去掉前后括号
     char tmp_response_buffer[4 * 1024];
@@ -129,19 +130,20 @@ char * query_city_code(char * city_name) {
         return code;
     }
 
-    cJSON *a0 = cJSON_DetachItemFromArray(city_json, 0);
-    cJSON *ref = cJSON_GetObjectItemCaseSensitive(a0, "ref");
-    if (cJSON_IsString(ref) && (ref->valuestring != NULL)) {
-        ESP_LOGD(TAG, "城市名称查询结果: %s", ref->valuestring);
+    city_json = cJSON_DetachItemFromArray(city_json, 0);
+    city_json = cJSON_GetObjectItemCaseSensitive(city_json, "ref");
+    if (cJSON_IsString(city_json) && (city_json->valuestring != NULL)) {
+        ESP_LOGD(TAG, "城市名称查询结果: %s", city_json->valuestring);
 
         // 截取出城市编码
-        char * tmp = strstr(ref->valuestring, "~");
-        uint32_t length = strlen(ref->valuestring) - strlen(tmp);
-        strncpy(code, ref->valuestring, length);
+        char * tmp = strstr(city_json->valuestring, "~");
+        uint32_t length = strlen(city_json->valuestring) - strlen(tmp);
+        strncpy(code, city_json->valuestring, length);
         code[length] = '\0';
     }
 
     free(url);
+    cJSON_Delete(city_json);
 
     return code;
 }
@@ -161,10 +163,10 @@ char * query_city_code_by_ip() {
         .disable_auto_redirect = true,
     };
 
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+
     int s_retry_num = 0;
     while (1) {
-        esp_http_client_handle_t client = esp_http_client_init(&config);
-
         esp_err_t err = esp_http_client_perform(client);
         if (err == ESP_OK) {
             ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
@@ -182,6 +184,7 @@ char * query_city_code_by_ip() {
     }
 
     ESP_LOGD(TAG, "%s", local_response_buffer);
+    esp_http_client_cleanup(client);
 
     char tmp_1[16];
     char tmp_2[16];
@@ -208,13 +211,13 @@ weather_t weather_init(char * city_code) {
         .disable_auto_redirect = true,
     };
 
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_header(client, "Referer", "http://www.weather.com.cn/");
+
     weather_t wea;
 
     int s_retry_num = 0;
     while (1) {
-        esp_http_client_handle_t client = esp_http_client_init(&config);
-        esp_http_client_set_header(client, "Referer", "http://www.weather.com.cn/");
-
         esp_err_t err = esp_http_client_perform(client);
         if (err == ESP_OK) {
             ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
@@ -227,12 +230,13 @@ weather_t weather_init(char * city_code) {
         }
 
         if (s_retry_num >= 3) {
-            wea.temp = "";
+            strcpy(wea.temp, "");
             return wea;
         }
     }
-
-    ESP_LOGD(TAG, "%s", local_response_buffer);
+    
+    free(uri);
+    esp_http_client_cleanup(client);
 
     strtok(local_response_buffer, "=");
     char *dz = strtok(NULL, "=");
@@ -250,61 +254,58 @@ weather_t weather_init(char * city_code) {
     cJSON *weatherinfo = cJSON_GetObjectItemCaseSensitive(dz_json, "weatherinfo");
     cJSON *weather = cJSON_GetObjectItemCaseSensitive(weatherinfo, "weather");
     if (cJSON_IsString(weather) && (weather->valuestring != NULL)) {
-        wea.weather[0] = malloc(sizeof(char) * 32);
         sprintf(wea.weather[0], "今日 %s", weather->valuestring);
     }
     cJSON *weathercode = cJSON_GetObjectItemCaseSensitive(weatherinfo, "weathercode");
     if (cJSON_IsString(weathercode) && (weathercode->valuestring != NULL)) {
-        wea.weathercode = weathercode->valuestring;
+        strcpy(wea.weathercode, weathercode->valuestring);
     }
     cJSON *weathercoden = cJSON_GetObjectItemCaseSensitive(weatherinfo, "weathercoden");
     if (cJSON_IsString(weathercoden) && (weathercoden->valuestring != NULL)) {
-        wea.weathercoden = weathercoden->valuestring;
+        strcpy(wea.weathercoden, weathercoden->valuestring);
     }
     cJSON *city = cJSON_GetObjectItemCaseSensitive(weatherinfo, "city");
     if (cJSON_IsString(city) && (city->valuestring != NULL)) {
-        wea.city = city->valuestring;
+        strcpy(wea.city, city->valuestring);
     }
+    cJSON_Delete(dz_json);
 
     cJSON *sk_json = cJSON_Parse(sk);
     cJSON *sk_WD = cJSON_GetObjectItemCaseSensitive(sk_json, "WD");
     if (cJSON_IsString(sk_WD) && (sk_WD->valuestring != NULL)) {
         cJSON *sk_WS = cJSON_GetObjectItemCaseSensitive(sk_json, "WS");
         if (cJSON_IsString(sk_WS) && (sk_WS->valuestring != NULL)) {
-            wea.weather[2] = malloc(sizeof(char) * 32);
             sprintf(wea.weather[2], "风向 %s%s", sk_WD->valuestring, sk_WS->valuestring);
-        }   
+        }
     }
     cJSON *sk_temp = cJSON_GetObjectItemCaseSensitive(sk_json, "temp");
     if (cJSON_IsString(sk_temp) && (sk_temp->valuestring != NULL)) {
-        wea.temp = sk_temp->valuestring;
+        strcpy(wea.temp, sk_temp->valuestring);
     }
     cJSON *sk_sd = cJSON_GetObjectItemCaseSensitive(sk_json, "SD");
     if (cJSON_IsString(sk_sd) && (sk_sd->valuestring != NULL)) {
-        wea.sd = sk_sd->valuestring;
+        strcpy(wea.sd, sk_sd->valuestring);
     }
     cJSON *sk_aqi = cJSON_GetObjectItemCaseSensitive(sk_json, "aqi");
     if (cJSON_IsString(sk_aqi) && (sk_aqi->valuestring != NULL)) {
         wea.aqi = strtol(sk_aqi->valuestring, NULL, 10);
-        
-        wea.weather[1] = malloc(sizeof(char) * 32);
         sprintf(wea.weather[1], "空气质量 %s", sk_aqi->valuestring);
     }
+    cJSON_Delete(sk_json);
 
     cJSON *fc_json = cJSON_Parse(fc);
     cJSON *f = cJSON_GetObjectItemCaseSensitive(fc_json, "f");
     cJSON *ff = cJSON_DetachItemFromArray(f, 0);
 
-    cJSON *low = cJSON_GetObjectItemCaseSensitive(ff, "fd");
-    if (cJSON_IsString(low) && (low->valuestring != NULL)) {
-        wea.weather[3] = malloc(sizeof(char) * 32);
-        sprintf(wea.weather[3], "最低温度 %s", low->valuestring);
+    cJSON *ff_fd = cJSON_GetObjectItemCaseSensitive(ff, "fd");
+    if (cJSON_IsString(ff_fd) && (ff_fd->valuestring != NULL)) {
+        sprintf(wea.weather[3], "最低温度 %s", ff_fd->valuestring);
     }
-    cJSON *high = cJSON_GetObjectItemCaseSensitive(ff, "fc");
-    if (cJSON_IsString(high) && (high->valuestring != NULL)) {
-        wea.weather[4] = malloc(sizeof(char) * 32);
-        sprintf(wea.weather[4], "最高温度 %s", high->valuestring);
+    cJSON *ff_fc = cJSON_GetObjectItemCaseSensitive(ff, "fc");
+    if (cJSON_IsString(ff_fc) && (ff_fc->valuestring != NULL)) {
+        sprintf(wea.weather[4], "最高温度 %s", ff_fc->valuestring);
     }
+    cJSON_Delete(fc_json);
 
     ESP_LOGI(TAG, "init weather success.");
 

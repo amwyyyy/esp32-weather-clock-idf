@@ -2,12 +2,12 @@
 #define _weather_h_
 
 typedef struct {
-    char * weather[5];
-    char * temp;
-    char * sd;
-    char * weathercode;
-    char * weathercoden;
-    char * city;
+    char weather[5][32];
+    char temp[5];
+    char sd[5];
+    char weathercode[5];
+    char weathercoden[5];
+    char city[8];
     uint32_t aqi;
 } weather_t;
 
