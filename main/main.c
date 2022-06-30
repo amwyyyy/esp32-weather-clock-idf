@@ -84,9 +84,9 @@ static void update_data_task(void *pvParameter) {
 
 static void mem_monitor(void *pvParameter) {
     while (1) {
-        ESP_LOGI(TAG, "[APP] Free internal memory: %d KB", esp_get_free_internal_heap_size() / 1024);
-        ESP_LOGI(TAG, "[APP] Free all memory: %d KB", esp_get_free_heap_size() / 1024);
-        ESP_LOGI(TAG, "[APP] Min free memory: %d KB", esp_get_minimum_free_heap_size() / 1024);
+        ESP_LOGI(TAG, "[APP] Free internal memory: %d", esp_get_free_internal_heap_size());
+        ESP_LOGI(TAG, "[APP] Free all memory: %d", esp_get_free_heap_size());
+        ESP_LOGI(TAG, "[APP] Min free memory: %d", esp_get_minimum_free_heap_size());
 
         vTaskDelay(1000 * 60 * 30 / portTICK_PERIOD_MS);
     }
