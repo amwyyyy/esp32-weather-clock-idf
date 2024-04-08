@@ -305,6 +305,7 @@ weather_t weather_init(char * city_code) {
     if (cJSON_IsString(ff_fc) && (ff_fc->valuestring != NULL)) {
         sprintf(wea.weather[4], "最高温度 %s", ff_fc->valuestring);
     }
+    cJSON_Delete(ff);
     cJSON_Delete(fc_json);
 
     ESP_LOGI(TAG, "init weather success.");
