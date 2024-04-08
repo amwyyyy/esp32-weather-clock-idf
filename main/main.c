@@ -73,8 +73,7 @@ void connect_wifi() {
  */
 static void update_data_task(void *pvParameter) {
     while (1) {
-        // vTaskDelay(1000 * 60 * 60 / portTICK_PERIOD_MS);
-        vTaskDelay(1000 * 60 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 * 60 * 60 / portTICK_PERIOD_MS);
 
         char * code = city_code();
         weather_t wea = weather_init(code);
@@ -212,7 +211,7 @@ void app_main() {
 
     connect_wifi();
 
-    xTaskCreate(mem_monitor, "mem_monitor", 1024 * 4, NULL, 1, NULL);
+    // xTaskCreate(mem_monitor, "mem_monitor", 1024 * 4, NULL, 1, NULL);
 
     ESP_LOGI(TAG, "[APP] Idf version: %s", esp_get_idf_version());
 }
