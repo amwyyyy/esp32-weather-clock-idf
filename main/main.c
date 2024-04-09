@@ -37,6 +37,8 @@
 
 #define TAG "main"
 
+#define BTN_GPIO 0
+
 static uint32_t is_init = 1;
 xQueueHandle basic_evt_queue;
 
@@ -102,11 +104,11 @@ static void backlight_upgrade(void *pvParameter) {
         if (dt.hour >= 0 && dt.hour < 7) {
             set_bl_pwm(0);
         } else if (dt.hour >=7 && dt.hour < 15) {
-            set_bl_pwm(8);
+            set_bl_pwm(7);
         } else if (dt.hour >= 15 && dt.hour < 22) {
-            set_bl_pwm(6);
+            set_bl_pwm(5);
         } else {
-            set_bl_pwm(4);
+            set_bl_pwm(3);
         }
         vTaskDelay(1000 * 60 * 60 / portTICK_PERIOD_MS);
     }
@@ -198,8 +200,35 @@ static void event_handle(void *pvParameter) {
     }
 }
 
+static void btn_event(void *pvParameter) {
+    uint8_t flag = 0;
+    while (1) {
+        int button_state = gpio_get_level(BTN_GPIO);
+	    if (button_state == 0 && flag == 0) {
+            flag = 1;
+
+            uint32_t value;
+            get_setting_bl(&value);
+            set_bl_pwm((value + 1) % 11);
+	    } else if (button_state == 1) {
+            flag = 0;
+        }
+
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}
+
+void btn_init() {
+    gpio_reset_pin(BTN_GPIO);
+    gpio_set_direction(BTN_GPIO, GPIO_MODE_INPUT);
+
+    xTaskCreate(btn_event, "btn_event", 1024 * 2, NULL, 1, NULL);
+}
+
 void app_main() {
     basic_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+
+    btn_init();
 
     storage_init();
 

@@ -91,6 +91,8 @@ ledc_channel_config_t ledc_channel[LEDC_TEST_CH_NUM] = {
  * @param value 0~10
  */
 void set_bl_pwm(uint32_t value) {
+    set_setting_bl(value);
+
     uint32_t bl = (0xFF - 250) + (value * 25);
     ESP_LOGI(TAG, "LEDC set duty = %d without fade", bl);
     for (int ch = 0; ch < LEDC_TEST_CH_NUM; ch++) {
