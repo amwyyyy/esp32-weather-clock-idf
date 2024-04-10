@@ -161,7 +161,7 @@ static httpd_handle_t start_webserver(void)
 {
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.max_open_sockets = 13;
+    config.max_open_sockets = 5;
     config.lru_purge_enable = true;
     config.stack_size = 1024 * 8;
 

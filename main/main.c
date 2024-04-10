@@ -207,9 +207,14 @@ static void btn_event(void *pvParameter) {
 	    if (button_state == 0 && flag == 0) {
             flag = 1;
 
-            uint32_t value;
-            get_setting_bl(&value);
-            set_bl_pwm((value + 1) % 11);
+            if (is_init) {
+                ESP_ERROR_CHECK(nvs_flash_erase());
+                esp_restart();
+            } else {
+                uint32_t value;
+                get_setting_bl(&value);
+                set_bl_pwm((value + 1) % 11);
+            }
 	    } else if (button_state == 1) {
             flag = 0;
         }
